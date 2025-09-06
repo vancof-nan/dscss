@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        :root {
+            --box_H: 50px;
+        }
+        .box {
+            height: var(--page_H);
+            width: 50px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body class="page" id="page">
+
+    <div class="box"></div>
+    <script>
+        setTimeout(() => {
+            let styles = document.querySelector("style");
+            styles.innerText;
+
+        }, 1000);
+    </script>
+</body>
+</html>

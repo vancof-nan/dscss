@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 0 !important;
+    scrollbar-width: none;
+    
+}
+.page {
+    position: relative;
+ overflow: hidden;
+
+
+}
+
+.background {
+ 
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+height: var(--page---H);
+width: var(--page---W);
+width: var(--something___h1---H);
+}
+.background img {
+  position: absolute;
+  width: 100%;
+  min-height: 100%;
+}
+.card {
+  position: absolute;
+  z-index: +1;
+  top: 50%;
+  right: calc((var(--background---H) - (var(--background---H) / 1.1)) / 2);
+  transform: translate(0% , -50%);
+  height: calc(var(--background---H) / 1.1);
+  width: calc((var(--background---W) / 2) - (var(--background---H) - (var(--background---H) / 1.1)));
+  background-color: rgb(255, 255, 255 , 0.9);
+  border-radius: calc(1dvh + 1dvw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.welcome-back {
+  position: absolute;
+  left: calc((var(--background---H) - (var(--background---H) / 1.1)) / 2);
+  z-index: +1;
+  top: 50%;
+  transform: translate(0 , -50%);
+  width: calc(var(--background---W) - (var(--card---W) + (((var(--background---H) - (var(--background---H) / 1.1)) * 1.5))));
+  flex-direction: column;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--card---H);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: white;
+  
+}
+.welcome-back * {
+  text-align: center;
+}
+.welcome-back h1 {
+  font-size: calc((var(--background---H) + var(--background---W)) / 40);
+  
+}
+.welcome-back h2 {
+  font-size: calc((var(--background---H) + var(--background---W)) / 105);
+}
+.logo {
+  height: calc(var(--card---H) / 4);
+  width: 100%;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.logo img {
+  width: calc((var(--logo---W) + var(--logo---H)) / 6);
+  max-height: calc(var(--logo---H) / 1.1);
+}
+.logo h1 {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: calc((var(--logo___img---H) + var(--logo___img---W)) / 7);
+  color: #0092dd;
+}
+.input {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--card---W) / 1.2);
+  height: calc(((var(--card---H) - (var(--card__logo---H))) / 10) - 2px);
+  border-bottom: 2px solid black;
+
+}
+.input h1 {
+  max-width: calc(var(--__input---W) / 5);
+  max-height: 100%;
+  overflow-x: scroll;
+  white-space: nowrap;
+  
+  font-size: calc((var(--__input---W) + var(--__input---H)) / 15);
+ font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.input input {
+  width: calc(var(--__input---W) - (var(--__input___h1---W)));
+}
+
+
+/* make it work with complex equations, right now debug in console of chrome to see how
+the flow goes and what to change */
+    </style>
+</head>
+<body class="page" id="page">
+<section class="background">
+<img src="https://images.wallpapersden.com/image/download/blue-glowing-4k-line_bGVpbWWUmZqaraWkpJRpZWVlrWdnamU.jpg" alt="" srcset="">
+</section>
+<section class="welcome-back">
+<h1>Welcome back!</h1>
+<h2>We are happy to see you again!</h2>
+</section>
+<section class="card">
+<section class="logo">
+  <img class="logo-img" src="https://i.postimg.cc/XN1dXPCj/image-removebg-preview.png" alt="" srcset="">
+  <h1>Lumex</h1>
+</section>
+
+<section class="input">
+  <h1>Email</h1>
+  <input type="text">
+</section>
+</section>
+
+
+<script>
+function buildSelectorFromChain(selectorChain) {
+  // "__" => descendant class, "___" => descendant tag
+  return selectorChain
+    .replace(/___/g, " ")
+    .replace(/__([a-zA-Z0-9_-]+)/g, " .$1")
+    .replace(/^([a-zA-Z][\w-]*)/, ".$1"); // ensure leading dot
+}
+
+function measure(targetEl, property) {
+  if (!targetEl) return null;
+  switch (property) {
+    case "H": return targetEl.clientHeight + "px";
+    case "W": return targetEl.clientWidth + "px";
+    default:  return null;
+  }
+}
+
+function setPageHeight() {
+  const pg = document.getElementById("page");
+  if (pg) pg.style.height = window.innerHeight + "px";
+}
+
+// Cache of { varName, selector, property, element }
+const varBindings = new Map();
+function buildClosestQuery(element, selectorChain) {
+  // Split into parts like ["page", "any-class", "h1"]
+  let parts = selectorChain.split(/__+/).filter(e => e !== "");
+  if (!parts.length) return null;
+
+  // First part: assume it's always a class
+  let selector = `.${parts[0]}`;
+
+  // Remaining parts
+  for (let i = 1; i < parts.length; i++) {
+    const part = parts[i];
+    if (!part) continue;
+
+    if (/^[a-z]/.test(part)) {
+      // starts with lowercase = tag
+      selector += ` ${part}`;
+    } else {
+      // otherwise = class
+      selector += ` .${part}`;
+    }
+  }
+
+  return selector;
+}
+
+function init() {
+  setPageHeight();
+
+  const rx = /var\(\s*--([^)]+)\s*\)/g;   // keep as-is
+  const rxClosest = /^__([a-zA-Z0-9_-]+)/; // new: detect closest variables
+
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      continue; // skip CORS-protected stylesheets
+    }
+    if (!rules) continue;
+
+    for (const rule of rules) {
+      if (!rule?.style) continue;
+
+      for (const prop of rule.style) {
+        const value = rule.style.getPropertyValue(prop);
+        if (!value) continue;
+
+        let m;
+        while ((m = rx.exec(value))) {
+          if (m.includes("--__")) {
+            
+          }
+          const varName = m[1].trim(); // e.g. "__input---W" or "box__h1---H"
+          let [selectorChain, property] = varName.split("---");
+          if (!selectorChain || !property) continue;
+
+          if (rxClosest.test(selectorChain)) {
+            
+
+const cssSelector = rule.selectorText;
+
+const rxVars = /var\(\s*--([^)]+)\s*\)/g;
+let variables = [...value.matchAll(rxVars)].map(m => m[1].trim());
+
+let elements = document.querySelectorAll(cssSelector);
+
+for (let index = 0; index < elements.length; index++) {
+  let element = elements[index];
+  let finalInlineValue;
+ for (let index0 = 0; index0 < variables.length; index0++) {
+  let variable = variables[index0];
+
+  let [selChain, propertyIn] = variable.split("---");
+  if (!selChain || !propertyIn) continue;
+
+  let dynamicVar = "--" + selChain   // <---- use the actual variable chain
+    .replace(/^__/, "")              // strip leading "__"
+    .replace(/___/g, "___")          // keep tags distinct
+    .replace(/__/g, "__")            // keep classes distinct
+    + "-E" + (index + 1);
+
+  // measure closest
+  let closeSelector = buildClosestQuery(element, selChain);
+  let closestElement;
+  if (closeSelector.includes(" ")) {
+  let selectors = closeSelector.split(" ") 
+selectors.forEach(selElement => {
+  if (selElement == selectors[0]) {
+closestElement = element.closest(selElement);
+  }
+  else {
+closestElement =    closestElement.querySelector(selElement);
+  }
+});
+  }
+
+  if (!closestElement) continue;
+
+  let varValue = propertyIn === "H" ? closestElement.clientHeight : closestElement.clientWidth;
+  dynamicVar += `---${propertyIn}`;
+
+  // assign root var
+  document.documentElement.style.setProperty(dynamicVar, varValue + "px");
+
+  // replace in calc expression
+  finalInlineValue = !finalInlineValue
+    ? value.replace(variable, dynamicVar.substring(2))
+    : finalInlineValue.replace(variable, dynamicVar.substring(2));
+}
+
+
+element.style.setProperty(prop , finalInlineValue);
+
+
+// now need to assignt the current elelment this dynamic var
+// and then ask gpt to optimize performance
+
+  
+
+}
+
+            // ==========================
+            // Closest variable detected
+            // Example: --__input---W
+            // At this point, variable is requesting "closest" resolution
+            // ==========================
+            // TODO: generate unique variable + querySelectorAll + inline assign
+            // console.log("Closest requested:", varName, "in", rule.selectorText);
+          } else {
+            // === Normal (global) variable ===
+            if (varBindings.has(varName)) continue;
+
+            const selector = buildSelectorFromChain(selectorChain);
+            let el;
+            try {
+              el = document.querySelector(selector);
+            } catch {
+              el = null;
+            }
+            if (!el) continue;
+
+            varBindings.set(varName, { selector, property, element: el });
+          }
+        }
+      }
+    }
+  }
+
+  finalize(); // compute initial values
+}
+
+function finalize() {
+  for (const [varName, { property, element }] of varBindings) {
+    const val = measure(element, property);
+    if (val) {
+      document.documentElement.style.setProperty(`--${varName}`, val);
+    }
+  }
+}
+
+window.addEventListener("load", init);
+window.addEventListener("resize", () => {
+  setPageHeight();
+  finalize();
+});
+
+// MutationObserver to watch for DOM changes
+const observer = new MutationObserver(() => {
+  finalize(); // recalc values when DOM changes
+});
+
+// Observe all subtree modifications inside <body>
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+  attributes: true,
+});
+</script>
+
+
+</body>
+</html>
+<!-- build up this login form to see if it is right or not -->
+ <!-- 
+three "___" means look inside by tag
+two "__" means look inside by classname
+---H / ---W
+stands for height and width
+ -->
+
+
+ <!-- GO to look and look 1 they are some kind of working
+  put it here and get closest issue solved -->

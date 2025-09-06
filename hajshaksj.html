@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic CSS Variables</title>
+ <link rel="stylesheet" href="./Css/uhsauhs.css">
+</head>
+<body class="page" id="page">
+
+  <div class="box">
+    <div class="h1" style="width: 50px;">hello</div>
+  </div>
+<div class="box-2"></div>
+<script>
+  function updateDynamicVars() {
+    // Get all stylesheets
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) {
+          if (rule.style) {
+            for (const prop of rule.style) {
+              let value = rule.style.getPropertyValue(prop);
+
+              // Find var(--something)
+              const matches = value.match(/var\(--([^)]+)\)/g);
+              if (matches) {
+                matches.forEach(match => {
+                  const varName = match.replace(/var\(--|[) ]/g, ""); // e.g. "box__h1---W"
+
+                  // Split variable into selector part and property part
+                  const [selectorChain, property] = varName.split("---");
+
+                  // Turn "__" into descendant selectors
+                  const selector = "." + selectorChain.split("__").join(" .");
+
+                  // Query element
+                  const element = document.querySelector(selector);
+
+                  if (element) {
+                    let newValue;
+                    if (property === "H") newValue = element.clientHeight + "px";
+                    if (property === "W") newValue = element.clientWidth + "px";
+
+                    if (newValue) {
+                      document.documentElement.style.setProperty(`--${varName}`, newValue);
+                    }
+                  }
+                });
+              }
+            }
+          }
+        }
+      } catch (err) {
+        // ignore CORS-restricted stylesheets
+      }
+    }
+  }
+
+  function init() {
+    // Ensure page has size
+    document.getElementById("page").style.height = window.innerHeight + 'px';
+
+    // Update variables
+    updateDynamicVars();
+  }
+
+  // Run on load + resize
+  window.addEventListener("resize", init);
+  window.addEventListener("load", init);
+</script>
+
+
+</body>
+</html>

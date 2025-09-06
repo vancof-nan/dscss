@@ -1,0 +1,9 @@
+* {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.nav {
+    background-color: red;
+    height: calc(var(--page---H) / 8);
+    width: 100dvw;
+}
